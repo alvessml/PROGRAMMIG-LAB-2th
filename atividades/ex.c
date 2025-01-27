@@ -1,67 +1,57 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
-void imprimir_centralizado(const char *, int);
+#define MAXVETOR 10
 
-#define TAM 100
+void preencherNumArray(int *);
+void bubbleSort(int, int *);
+void printNumArray(int *);
 
-struct financeiro {
-        char titular[TAM];
-        char data[11];
-        float valor;
-        char tipo[TAM];
-        char nome[TAM];
-    };
 
 int main(){
-    struct financeiro dados[TAM];
-    int cont = 0;
-    char continuar = 'n';
-    printf("_____Preenche os dados a seguir_____\n");
-    while(continuar != 's' && cont < TAM){
-        printf("Insira o titular: ");
-        fgets(dados[cont].titular, sizeof(dados[cont].titular), stdin);
-        dados[cont].titular[strcspn(dados[cont].titular, "\n")] = '\0'; // Remove o '\n' e substitui por caractere nulo '\0'
+    int array[MAXVETOR];
 
-        printf("Insira data (DD/MM/AAAA): ");
-        scanf("%s", dados[cont].data);
+    preencherNumArray(array);
 
-        printf("Insira valor: R$");
-        scanf("%f", &dados[cont].valor);
-        
-        getchar();
-        printf("Insira tipo: ");
-        fgets(dados[cont].tipo, sizeof(dados[cont].tipo), stdin);
-        dados[cont].tipo[strcspn(dados[cont].tipo, "\n")] = '\0'; // Remove o '\n' e substitui por caractere nulo '\0'
+    int n = sizeof(array) / sizeof(array[0]);
+    bubbleSort(n, *array);
 
-        printf("Insira nome: ");
-        fgets(dados[cont].nome, sizeof(dados[cont].nome), stdin);
-        dados[cont].nome[strcspn(dados[cont].nome, "\n")] = '\0'; // Remove o '\n' e substitui por caractere nulo '\0'
-
-        cont += 1;
-
-        printf("Deseja parar a execução? (digite 's' para 'sair'): ");
-        scanf("%c", &continuar);
-        getchar();
-    }
-
-    printf("\n---------------------------------------------------------------\n");
-    printf("| %-10s | %-10s | %-20s | %-10s |", "Data", "Valor", "Tipo", "Nome");
-    printf("\n---------------------------------------------------------------\n");
-
-    for(int k=0; k < cont; k++){
-        imprimir_centralizado(dados[k].titular, 66);
-        printf("\n| %-10s | R$%-10.2f | %-20s | %-10s |\n", dados[k].data, dados[k].valor, dados[k].tipo, dados[k].nome);
-    }
 
     return 0;
 }
 
+void preencherNumArray(int *array){
+    srand(time(NULL));
 
-void imprimir_centralizado(const char *str, int largura_total) {
-    int comprimento_str = strlen(str);
-    int espacos_esquerda = (largura_total - comprimento_str) / 2;
-    int espacos_direita = largura_total - comprimento_str - espacos_esquerda;
-
-    printf("%*s%s%*s\n", espacos_esquerda, "", str, espacos_direita, "");
+    for(int k=0; k < MAXVETOR; k++){
+        array[k] = rand() % 100;
+    }
 }
+
+void bubbleSort(int n, int *array){
+    int temp;
+
+    4 3 2
+    3 4 2
+                 1 < 2
+    for(int i=0; i < n - 1; i++){
+                  1  1 < 1
+        for(int j=0; j < n - 1 - i; j++){
+                4            3
+            if(array[j] > array[j+1]){
+                temp = array[j];
+                array[j] = array[j+1];
+                array[j+1] = temp;
+            }
+        }
+    }
+}
+
+void printNumArray(int *array){
+    for(int k=0; k < MAXVETOR; k++){
+        printf("%d ", array[k]);
+    }
+    printf("\n");
+}
+
