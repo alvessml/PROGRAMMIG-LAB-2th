@@ -7,10 +7,14 @@
 
 // Estrutura para armazenar dados financeiros
 struct financeiro {
-    char data[11];
-    float valor;
+    char dataAplicacao[11];
+    float valorAplicado;
     char tipo[100];
     char nome[100];
+    char dataVencimento[11];
+    float taxaJuros;
+    char imposto[3];
+    float valor;
 };
 
 // Estrutura para armazenar titulares e seus dados financeiros
@@ -20,13 +24,15 @@ struct titular {
     int qtd_dados; // Contador para o número de dados por titular
 };
 
+
+
 // Função para comparar dados financeiros com (ordem: data, tipo, valor)
 int comparar_financeiro(const void *a, const void *b) {
     const struct financeiro *fa = (const struct financeiro *)a;
     const struct financeiro *fb = (const struct financeiro *)b;
 
     // Comparação por data
-    int cmp_data = strcmp(fa->data, fb->data);
+    int cmp_data = strcmp(fa->dataAplicacao, fb->dataAplicacao);
     if (cmp_data != 0) return cmp_data;
 
     // Comparação por tipo
@@ -34,11 +40,13 @@ int comparar_financeiro(const void *a, const void *b) {
     if (cmp_tipo != 0) return cmp_tipo;
 
     // Comparação por valor (crescente)
-    if (fa->valor < fb->valor) return -1;
-    if (fa->valor > fb->valor) return 1;
+    if (fa->valorAplicado < fb->valorAplicado) return -1;
+    if (fa->valorAplicado > fb->valorAplicado) return 1;
 
     return 0;
 }
+
+
 
 int main() {
     struct titular usr[MAX_TITULARES];
@@ -60,11 +68,11 @@ int main() {
         while (continuar != 's' && usr[contTitular].qtd_dados < MAX_DADOS) {
             int contDados = usr[contTitular].qtd_dados;
 
-            printf("Insira a data (DD/MM/AAAA): ");
-            scanf("%10s", usr[contTitular].dados[contDados].data);
+            printf("Insira a data de aplicação (DD/MM/AAAA): ");
+            scanf("%10s", usr[contTitular].dados[contDados].dataAplicacao);
 
-            printf("Insira o valor (R$): ");
-            scanf("%f", &usr[contTitular].dados[contDados].valor);
+            printf("Insira o valor da aplicação (R$): ");
+            scanf("%f", &usr[contTitular].dados[contDados].valorAplicado);
 
             getchar(); // Limpa o buffer
             printf("Insira o tipo: ");
@@ -74,6 +82,15 @@ int main() {
             printf("Insira o nome: ");
             fgets(usr[contTitular].dados[contDados].nome, sizeof(usr[contTitular].dados[contDados].nome), stdin);
             usr[contTitular].dados[contDados].nome[strcspn(usr[contTitular].dados[contDados].nome, "\n")] = '\0';
+
+            printf("Insira a data de vecimento (DD/MM/AAAA): ");
+            scanf("%10s", usr[contTitular].dados[contDados].dataVencimento);
+
+            printf("Inserir taxa de juros: ");
+            scanf("%f", &usr[contTitular].dados[contDados].taxaJuros);
+
+            printf("Inserir imposto: ");
+            scanf("%s", usr[contTitular].dados[contDados].imposto);
 
             usr[contTitular].qtd_dados++;
 
@@ -98,16 +115,20 @@ int main() {
     printf("\n\n===== Dados Coletados (Ordenados) =====\n");
     for (int i = 0; i < contTitular; i++) {
         printf("\nTitular: %s\n", usr[i].titular);
-        printf("---------------------------------------------------------------\n");
-        printf("%-15s | %-15s | %-20s | %-20s\n", "Data", "Valor (R$)", "Tipo", "Nome");
-        printf("---------------------------------------------------------------\n");
+        printf("---------------------------------------------------------------------------------------------------------\n");
+        printf("%-15s | %-15s | %-20s | %-20s | %-15s | %-10s | %-10s |\n", "Data", "Valor (R$)", "Tipo", "Nome", "Data vencimento", "Taxa Juros", "Imposto");
+        printf("---------------------------------------------------------------------------------------------------------\n");
 
         for (int j = 0; j < usr[i].qtd_dados; j++) {
-            printf("%-15s | %-15.2f | %-20s | %-20s\n",
-                   usr[i].dados[j].data,
-                   usr[i].dados[j].valor,
+            printf("%-15s | %-15.2f | %-20s | %-20s | %-15s | %-10.2f | %-10s |\n",
+                   usr[i].dados[j].dataAplicacao,
+                   usr[i].dados[j].valorAplicado,
                    usr[i].dados[j].tipo,
-                   usr[i].dados[j].nome);
+                   usr[i].dados[j].nome,
+                   usr[i].dados[j].dataVencimento,
+                   usr[i].dados[j].taxaJuros,
+                   usr[i].dados[j].imposto
+                   );
         }
     }
 

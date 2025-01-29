@@ -1,57 +1,47 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <string.h>
 
-#define MAXVETOR 10
 
-void preencherNumArray(int *);
-void bubbleSort(int, int *);
-void printNumArray(int *);
+#define MAX_TITULARES 100
+#define MAX_DADOS 100
 
+struct data {
+    char dia;
+    char mes;
+    char ano;
+}
+
+// Estrutura para armazenar dados financeiros
+struct financeiro {
+    struct data dataAplicacao;
+    struct data dataVencimento;
+    float valorAplicado;
+    char tipo[100];
+    char nome[100];
+};
+
+// Estrutura para armazenar titulares e seus dados financeiros
+struct titular {
+    char titular[100];
+    struct financeiro dados[MAX_DADOS];
+    int qtd_dados; // Contador para o número de dados por titular
+};
 
 int main(){
-    int array[MAXVETOR];
+    struct titular usr[MAX_TITULARES];
+    int contTitular = 0;
 
-    preencherNumArray(array);
+    printf("===== Preencha os dados a seguir =====\n");
 
-    int n = sizeof(array) / sizeof(array[0]);
-    bubbleSort(n, *array);
+    char continuar = 'n';
+    char finalizar = 'n';
 
+    while (finalizar != 's' && contTitular < MAX_TITULARES) {
+        printf("\nInsira o nome do Titular: ");
+        fgets(usr[contTitular].titular, sizeof(usr[contTitular].titular), stdin);
+        usr[contTitular].titular[strcspn(usr[contTitular].titular, "\n")] = '\0'; // Remove o \n
+        
+    }
 
     return 0;
 }
-
-void preencherNumArray(int *array){
-    srand(time(NULL));
-
-    for(int k=0; k < MAXVETOR; k++){
-        array[k] = rand() % 100;
-    }
-}
-
-void bubbleSort(int n, int *array){
-    int temp;
-
-    4 3 2
-    3 4 2
-                 1 < 2
-    for(int i=0; i < n - 1; i++){
-                  1  1 < 1
-        for(int j=0; j < n - 1 - i; j++){
-                4            3
-            if(array[j] > array[j+1]){
-                temp = array[j];
-                array[j] = array[j+1];
-                array[j+1] = temp;
-            }
-        }
-    }
-}
-
-void printNumArray(int *array){
-    for(int k=0; k < MAXVETOR; k++){
-        printf("%d ", array[k]);
-    }
-    printf("\n");
-}
-
