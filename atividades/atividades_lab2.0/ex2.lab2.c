@@ -7,6 +7,14 @@
 #define MAX_TITULARES 100
 #define MAX_DADOS 100
 
+// Enum para os tipos de investimento
+typedef enum {
+    PREFIXADO,
+    IPCA_MAIS,
+    SELIC,
+    CDI
+} TipoInvestimento;
+
 // Estrutura para armazenar dados financeiros
 struct financeiro {
     char dataAplicacao[11];
@@ -16,13 +24,13 @@ struct financeiro {
     char tipoImposto[20]; // Tipo de imposto
     float valorBruto;    // Valor final bruto
     float valorImposto;  // Valor do imposto
-    char tipo[100];
+    TipoInvestimento tipo; // Tipo de investimento usando a Enum
     char nomeInvestimento[100]; // Nome do investimento
 };
 
 // Estrutura para armazenar titulares e seus dados financeiros
 struct titular {
-    char titular[100];
+    char titular[MAX_TITULARES];
     struct financeiro dados[MAX_DADOS];
     int qtd_dados; // Contador para o número de dados por titular
 };
@@ -62,6 +70,26 @@ float calcularImposto(int dias) {
     }
 }
 
+// Função para comparar dados financeiros com (ordem: data, tipo, valor)
+int comparar_financeiro(const void *a, const void *b) {
+    const struct financeiro *fa = (const struct financeiro *)a;
+    const struct financeiro *fb = (const struct financeiro *)b;
+
+    // Comparação por data
+    int cmp_data = strcmp(fa->dataAplicacao, fb->dataAplicacao);
+    if (cmp_data != 0) return cmp_data;
+
+    // Comparação por tipo
+    if (fa->tipo < fb->tipo) return -1;
+    if (fa->tipo > fb->tipo) return 1;
+
+    // Comparação por valor (crescente)
+    if (fa->valorAplicado < fb->valorAplicado) return -1;
+    if (fa->valorAplicado > fb->valorAplicado) return 1;
+
+    return 0;
+}
+
 // Função para atualizar o investimento com juros compostos
 void atualizarInvestimento(struct financeiro *investimento) {
     // Calcular diferença de dias entre dataAplicacao e dataVencimento
@@ -83,24 +111,22 @@ void atualizarInvestimento(struct financeiro *investimento) {
     investimento->valorImposto = investimento->valorBruto * impostoPercentual;
 }
 
-// Função para comparar dados financeiros com (ordem: data, tipo, valor)
-int comparar_financeiro(const void *a, const void *b) {
-    const struct financeiro *fa = (const struct financeiro *)a;
-    const struct financeiro *fb = (const struct financeiro *)b;
+// Função para imprimir o valor bruto total de cada titular
+float calcularValorBrutoTotal(struct titular *usr, int index) {
+    float totalBruto = 0.0;
+    for (int j = 0; j < usr[index].qtd_dados; j++) {
+        totalBruto += usr[index].dados[j].valorBruto;
+    }
+    return totalBruto;
+}
 
-    // Comparação por data
-    int cmp_data = strcmp(fa->dataAplicacao, fb->dataAplicacao);
-    if (cmp_data != 0) return cmp_data;
-
-    // Comparação por tipo
-    int cmp_tipo = strcmp(fa->tipo, fb->tipo);
-    if (cmp_tipo != 0) return cmp_tipo;
-
-    // Comparação por valor (crescente)
-    if (fa->valorAplicado < fb->valorAplicado) return -1;
-    if (fa->valorAplicado > fb->valorAplicado) return 1;
-
-    return 0;
+// Função para imprimir o valor líquido total de cada titular
+float calcularValorLiquidoTotal(struct titular *usr, int index) {
+    float totalLiquido = 0.0;
+    for (int j = 0; j < usr[index].qtd_dados; j++) {
+        totalLiquido += usr[index].dados[j].valorBruto - usr[index].dados[j].valorImposto;
+    }
+    return totalLiquido;
 }
 
 int main() {
@@ -114,7 +140,6 @@ int main() {
 
     while (finalizar != 's' && contTitular < MAX_TITULARES) {
         printf("\nInsira o nome do titular: ");
-        getchar(); // Limpa o buffer
         fgets(usr[contTitular].titular, sizeof(usr[contTitular].titular), stdin);
         usr[contTitular].titular[strcspn(usr[contTitular].titular, "\n")] = '\0'; // Remove o '\n'
 
@@ -128,7 +153,7 @@ int main() {
             scanf("%10s", usr[contTitular].dados[contDados].dataAplicacao);
 
             printf("Insira a data de vencimento (DD/MM/AAAA): ");
-            scanf("%10s", usr[contTitular].dados[contDados].dataVencimento); // Agora a data de vencimento é inserida aqui
+            scanf("%10s", usr[contTitular].dados[contDados].dataVencimento);
 
             printf("Insira o valor aplicado (R$): ");
             scanf("%f", &usr[contTitular].dados[contDados].valorAplicado);
@@ -136,15 +161,17 @@ int main() {
             printf("Insira a taxa de juros anual (exemplo: 0.05 para 5%%): ");
             scanf("%f", &usr[contTitular].dados[contDados].taxaJuros);
 
-            getchar(); // Limpa o buffer
+            getchar(); // Limpa o buffer (não é mais necessário após a correção)
             printf("Insira o tipo de imposto (exemplo: IR): ");
             fgets(usr[contTitular].dados[contDados].tipoImposto, sizeof(usr[contTitular].dados[contDados].tipoImposto), stdin);
             usr[contTitular].dados[contDados].tipoImposto[strcspn(usr[contTitular].dados[contDados].tipoImposto, "\n")] = '\0';
 
-            printf("Insira o tipo do investimento: ");
-            fgets(usr[contTitular].dados[contDados].tipo, sizeof(usr[contTitular].dados[contDados].tipo), stdin);
-            usr[contTitular].dados[contDados].tipo[strcspn(usr[contTitular].dados[contDados].tipo, "\n")] = '\0';
+            printf("Insira o tipo do investimento (0-Prefixado, 1-IPCA+, 2-Selic, 3-CDI): ");
+            int tipo;
+            scanf("%d", &tipo);
+            usr[contTitular].dados[contDados].tipo = (TipoInvestimento)tipo;
 
+            getchar(); // Limpa o buffer
             printf("Insira o nome do investimento: ");
             fgets(usr[contTitular].dados[contDados].nomeInvestimento, sizeof(usr[contTitular].dados[contDados].nomeInvestimento), stdin);
             usr[contTitular].dados[contDados].nomeInvestimento[strcspn(usr[contTitular].dados[contDados].nomeInvestimento, "\n")] = '\0';
@@ -152,15 +179,15 @@ int main() {
             usr[contTitular].qtd_dados++;
 
             printf("\nDeseja parar de adicionar dados para este titular? (digite 's' para 'sim'): ");
-            scanf(" %c", &continuar);
-            getchar(); // Limpa o buffer
+            scanf(" %c", &continuar); // Espaço antes do %c para ignorar espaços em branco
         }
 
         contTitular++;
 
         printf("\nDeseja parar de adicionar titulares? (digite 's' para 'sim'): ");
-        scanf(" %c", &finalizar);
-        getchar(); // Limpa o buffer
+        scanf(" %c", &finalizar); // Espaço antes do %c para ignorar espaços em branco
+
+        getchar(); // Limpa o buffer (não é mais necessário após a correção)
     }
 
     // Atualiza os investimentos e ordena os dados financeiros de cada titular
@@ -175,12 +202,12 @@ int main() {
     printf("\n\n===== Dados Coletados =====\n");
     for (int i = 0; i < contTitular; i++) {
         printf("\nTitular: %s\n", usr[i].titular);
-        printf("-------------------------------------------------------------------------------------------------------------------------------------\n");
+        printf("--------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         printf("%-20s | %-20s | %-20s | %-20s | %-20s | %-20s | %-20s\n", "Data", "Valor Aplicado", "Taxa (%)", "Imposto", "Tipo", "Valor Bruto", "Valor Imposto");
-        printf("-------------------------------------------------------------------------------------------------------------------------------------\n");
+        printf("--------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 
         for (int j = 0; j < usr[i].qtd_dados; j++) {
-            printf("%-20s | %-20.2f | %-20.2f | %-20s | %-20s | %-20.2f | %-20.2f\n",
+            printf("%-20s | %-20.2f | %-20.2f | %-20s | %-20d | %-20.2f | %-20.2f\n",
                    usr[i].dados[j].dataAplicacao,
                    usr[i].dados[j].valorAplicado,
                    usr[i].dados[j].taxaJuros * 100,
@@ -189,6 +216,14 @@ int main() {
                    usr[i].dados[j].valorBruto,
                    usr[i].dados[j].valorImposto);
         }
+
+        // Imprime o valor bruto total do titular
+        float totalBruto = calcularValorBrutoTotal(usr, i);
+        printf("\nValor Bruto Total de %s: %.2f\n", usr[i].titular, totalBruto);
+
+        // Imprime o valor líquido total do titular
+        float totalLiquido = calcularValorLiquidoTotal(usr, i);
+        printf("Valor Líquido Total de %s: %.2f\n", usr[i].titular, totalLiquido);
     }
 
     return 0;
